@@ -2085,22 +2085,22 @@ module pipeline
 
    always @(posedge clk) begin
       if(about_to_commit_i_in_rob1) begin
-         assert(mem0 == mem16);
-         assert(mem1 == mem17);
-         assert(mem2 == mem18);
-         assert(mem3 == mem19);
-         assert(mem4 == mem20);
-         assert(mem5 == mem21);
-         assert(mem6 == mem22);
-         assert(mem7 == mem23);
-         assert(mem8 == mem24);
-         assert(mem9 == mem25);
-         assert(mem10 == mem26);
-         assert(mem11 == mem27);
-         assert(mem12 == mem28);
-         assert(mem13 == mem29);
-         assert(mem14 == mem30);
-         assert(mem15 == mem31);
+         assume(mem0 == mem16);
+         assume(mem1 == mem17);
+         assume(mem2 == mem18);
+         assume(mem3 == mem19);
+         assume(mem4 == mem20);
+         assume(mem5 == mem21);
+         assume(mem6 == mem22);
+         assume(mem7 == mem23);
+         assume(mem8 == mem24);
+         assume(mem9 == mem25);
+         assume(mem10 == mem26);
+         assume(mem11 == mem27);
+         assume(mem12 == mem28);
+         assume(mem13 == mem29);
+         assume(mem14 == mem30);
+         assume(mem15 == mem31);
       end
    end
 
@@ -2139,22 +2139,22 @@ module pipeline
 
    always @(posedge clk) begin
       if(about_to_commit_i_in_rob2) begin
-         assert(snapshot_mem0 == snapshot_mem16);
-         assert(snapshot_mem1 == snapshot_mem17);
-         assert(snapshot_mem2 == snapshot_mem18);
-         assert(snapshot_mem3 == snapshot_mem19);
-         assert(snapshot_mem4 == snapshot_mem20);
-         assert(snapshot_mem5 == snapshot_mem21);
-         assert(snapshot_mem6 == snapshot_mem22);
-         assert(snapshot_mem7 == snapshot_mem23);
-         assert(snapshot_mem8 == snapshot_mem24);
-         assert(snapshot_mem9 == snapshot_mem25);
-         assert(snapshot_mem10 ==snapshot_mem26);
-         assert(snapshot_mem11 ==snapshot_mem27);
-         assert(snapshot_mem12 ==snapshot_mem28);
-         assert(snapshot_mem13 ==snapshot_mem29);
-         assert(snapshot_mem14 ==snapshot_mem30);
-         assert(snapshot_mem15 ==snapshot_mem31);
+         assume(snapshot_mem0 == snapshot_mem16);
+         assume(snapshot_mem1 == snapshot_mem17);
+         assume(snapshot_mem2 == snapshot_mem18);
+         assume(snapshot_mem3 == snapshot_mem19);
+         assume(snapshot_mem4 == snapshot_mem20);
+         assume(snapshot_mem5 == snapshot_mem21);
+         assume(snapshot_mem6 == snapshot_mem22);
+         assume(snapshot_mem7 == snapshot_mem23);
+         assume(snapshot_mem8 == snapshot_mem24);
+         assume(snapshot_mem9 == snapshot_mem25);
+         assume(snapshot_mem10 ==snapshot_mem26);
+         assume(snapshot_mem11 ==snapshot_mem27);
+         assume(snapshot_mem12 ==snapshot_mem28);
+         assume(snapshot_mem13 ==snapshot_mem29);
+         assume(snapshot_mem14 ==snapshot_mem30);
+         assume(snapshot_mem15 ==snapshot_mem31);
       end
    end
 

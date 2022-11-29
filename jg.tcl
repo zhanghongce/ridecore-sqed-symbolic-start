@@ -49,5 +49,5 @@ analyze -sv vlg/alloc_issue_ino.v \
 
 elaborate -disable_auto_bbox -top top
 clock clk
-reset -expression ~reset_x -max_iterations 5 -non_resettable_regs 0
+reset -expression ~reset_x -max_iterations 5
 
