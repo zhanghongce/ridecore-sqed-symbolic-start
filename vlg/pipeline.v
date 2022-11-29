@@ -2149,12 +2149,12 @@ module pipeline
          assert(snapshot_mem7 == snapshot_mem23);
          assert(snapshot_mem8 == snapshot_mem24);
          assert(snapshot_mem9 == snapshot_mem25);
-         assert(snapshot_mem10 ==snapshot_ mem26);
-         assert(snapshot_mem11 ==snapshot_ mem27);
-         assert(snapshot_mem12 ==snapshot_ mem28);
-         assert(snapshot_mem13 ==snapshot_ mem29);
-         assert(snapshot_mem14 ==snapshot_ mem30);
-         assert(snapshot_mem15 ==snapshot_ mem31);
+         assert(snapshot_mem10 ==snapshot_mem26);
+         assert(snapshot_mem11 ==snapshot_mem27);
+         assert(snapshot_mem12 ==snapshot_mem28);
+         assert(snapshot_mem13 ==snapshot_mem29);
+         assert(snapshot_mem14 ==snapshot_mem30);
+         assert(snapshot_mem15 ==snapshot_mem31);
       end
    end
 

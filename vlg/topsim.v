@@ -55,7 +55,7 @@ module top
    wire 		  ready_tx;
    wire 		  loaded;
    
-   reg 			  prog_loading;
+   wire 			  prog_loading = 0;
    wire [4*`INSN_LEN-1:0] prog_loaddata = 0;
    wire [`ADDR_LEN-1:0]   prog_loadaddr = 0;
    wire 		  prog_dmem_we = 0;
@@ -80,6 +80,7 @@ module top
       end
    end
 */
+/*
    always @ (posedge clk) begin
       if (!reset_x) begin
 	 prog_loading <= 1'b1;
@@ -87,6 +88,7 @@ module top
 	 prog_loading <= 0;
       end
    end
+*/
 /*   
    GEN_MMCM_DS genmmcmds
      (
@@ -102,7 +104,7 @@ module top
      (
       .inst1(instruction),
       .clk(clk),
-      .reset(~reset_x | prog_loading), // ~reset_x | prog_loading
+      .reset(~reset_x), // ~reset_x | prog_loading
       .outside_reset(~reset_x),
       .pc(pc),
       .idata(idata),
