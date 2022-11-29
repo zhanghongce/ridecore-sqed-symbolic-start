@@ -8,7 +8,8 @@ module pipeline
   (
    input wire [`INSN_LEN-1:0] inst1,
    input wire 			clk,
-   input wire 			reset,
+   input wire 			reset,  // will not be reseted
+   input wire        outside_reset,  // will be reseted
    output reg [`ADDR_LEN-1:0] 	pc,
    input wire [4*`INSN_LEN-1:0] idata,
    output wire [`DATA_LEN-1:0] 	dmem_wdata,
@@ -55,7 +56,7 @@ module pipeline
    // instruction1 and qed_exec_dup are cutpoints
    qed qed0 ( // Inputs
       .clk(clk),
-            .rst(reset),
+            .rst(outside_reset),
             .ena(1'b1),
             .ifu_qed_instruction(inst1),
             .exec_dup(qed_exec_dup),
@@ -861,8 +862,38 @@ module pipeline
 			      .comptr(comptr),
 			      .nextrrfcyc(nextrrfcyc)
 			      );
-   wire [`DATA_LEN-1:0] mem1;
+   wire [`DATA_LEN-1:0] mem0 ;
+   wire [`DATA_LEN-1:0] mem1 ;
+   wire [`DATA_LEN-1:0] mem2 ;
+   wire [`DATA_LEN-1:0] mem3 ;
+   wire [`DATA_LEN-1:0] mem4 ;
+   wire [`DATA_LEN-1:0] mem5 ;
+   wire [`DATA_LEN-1:0] mem6 ;
+   wire [`DATA_LEN-1:0] mem7 ;
+   wire [`DATA_LEN-1:0] mem8 ;
+   wire [`DATA_LEN-1:0] mem9 ;
+   wire [`DATA_LEN-1:0] mem10;
+   wire [`DATA_LEN-1:0] mem11;
+   wire [`DATA_LEN-1:0] mem12;
+   wire [`DATA_LEN-1:0] mem13;
+   wire [`DATA_LEN-1:0] mem14;
+   wire [`DATA_LEN-1:0] mem15;
+   wire [`DATA_LEN-1:0] mem16;
    wire [`DATA_LEN-1:0] mem17;
+   wire [`DATA_LEN-1:0] mem18;
+   wire [`DATA_LEN-1:0] mem19;
+   wire [`DATA_LEN-1:0] mem20;
+   wire [`DATA_LEN-1:0] mem21;
+   wire [`DATA_LEN-1:0] mem22;
+   wire [`DATA_LEN-1:0] mem23;
+   wire [`DATA_LEN-1:0] mem24;
+   wire [`DATA_LEN-1:0] mem25;
+   wire [`DATA_LEN-1:0] mem26;
+   wire [`DATA_LEN-1:0] mem27;
+   wire [`DATA_LEN-1:0] mem28;
+   wire [`DATA_LEN-1:0] mem29;
+   wire [`DATA_LEN-1:0] mem30;
+   wire [`DATA_LEN-1:0] mem31;
 
    arf aregfile(
 		.clk(clk),
@@ -909,8 +940,38 @@ module pipeline
 			     (isbranch2_id ? ~sptag2_id : ~(`SPECTAG_LEN'b0))),
 		.mpft_valid2(mpft_valid & 
 			     (isbranch2_id ? ~sptag2_id : ~(`SPECTAG_LEN'b0))),
-		.mem1(mem1),
-		.mem17(mem17)
+.mem0 (mem0 ),
+.mem1 (mem1 ),
+.mem2 (mem2 ),
+.mem3 (mem3 ),
+.mem4 (mem4 ),
+.mem5 (mem5 ),
+.mem6 (mem6 ),
+.mem7 (mem7 ),
+.mem8 (mem8 ),
+.mem9 (mem9 ),
+.mem10(mem10),
+.mem11(mem11),
+.mem12(mem12),
+.mem13(mem13),
+.mem14(mem14),
+.mem15(mem15),
+.mem16(mem16),
+.mem17(mem17),
+.mem18(mem18),
+.mem19(mem19),
+.mem20(mem20),
+.mem21(mem21),
+.mem22(mem22),
+.mem23(mem23),
+.mem24(mem24),
+.mem25(mem25),
+.mem26(mem26),
+.mem27(mem27),
+.mem28(mem28),
+.mem29(mem29),
+.mem30(mem30),
+.mem31(mem31)
 		);
    
    assign	rrftagfix = buf_rrftag_branch + 1;
@@ -1911,6 +1972,8 @@ module pipeline
 				  );
    
    //COM Stage*******************************************************
+   wire rob_commit1, rob_commit2;
+
    reorderbuf rob(
 		  .clk(clk),
 		  .reset(reset),
@@ -1958,8 +2021,144 @@ module pipeline
 		  .combranch(combranch),
 		  .dispatchptr(rrfptr),
 		  .rrf_freenum(freenum),
-		  .prmiss(prmiss)
+		  .prmiss(prmiss),
+
+        .commit1(rob_commit1),
+        .commit2(rob_commit2)
 		  );
+
+   // EDIT: Insert logic for tracking the first instruction
+   reg i_in_if, /* ~stall_IF  & qed_vld_out*/
+       i_in_id, /* ~stall_DP  & ~inv1_if & i_enters_if */
+       i_in_rob, /* ~stall_DP & ~kill_DP & ~inv1_id  */
+       if_triggered;
+
+   wire i_enters_if_cond  = ~stall_IF  & qed_vld_out;
+   wire i_enters_id_cond  = ~stall_DP  & ~inv1_if;
+   wire i_enters_rob_cond = ~stall_DP & ~kill_DP & ~inv1_id;
+   wire i_leaves_rob_cond;
+
+   reg [`RRF_SEL-1:0]  dp1_addr_buffered;
+
+   always @(posedge clk) begin
+      if(outside_reset) begin
+         i_in_if  <= 0;
+         i_in_id  <= 0;
+         i_in_rob <= 0;
+         if_triggered <= 0;
+      end else begin
+         if (i_enters_if_cond & ~if_triggered) begin
+            i_in_if <= 1;
+            if_triggered <= 1; // will not trigger this the second time
+         end else if (i_enters_id_cond) begin
+            i_in_if <= 0;
+         end
+
+         if(i_enters_id_cond & i_in_if) begin
+            i_in_id <= 1;
+         end else if (i_enters_rob_cond) begin
+            i_in_id <= 0;
+         end
+
+         if(i_enters_rob_cond & i_in_id) begin
+            i_in_rob <= 1;
+            dp1_addr_buffered <= dst1_renamed;
+         end else if (i_leaves_rob_cond) begin
+            i_in_rob <= 0;
+         end
+      end
+   end
+
+   wire about_to_commit_i_in_rob1 = comptr == dp1_addr_buffered && rob_commit1 && i_in_rob && ~prmiss;
+   wire about_to_commit_i_in_rob2 = comptr2 == dp1_addr_buffered && rob_commit2 && i_in_rob && ~prmiss;
+   assign i_leaves_rob_cond = about_to_commit_i_in_rob1 || about_to_commit_i_in_rob2;
+   assert property (!(about_to_commit_i_in_rob1 && about_to_commit_i_in_rob2));
+
+
+   reg first_qed_i_has_commited;
+   always @(posedge clk) begin
+      if(outside_reset)
+         first_qed_i_has_commited <= 0;
+      else if(i_leaves_rob_cond)
+         first_qed_i_has_commited <= 1;
+   end
+
+   always @(posedge clk) begin
+      if(about_to_commit_i_in_rob1) begin
+         assume(mem0 == mem16);
+         assume(mem1 == mem17);
+         assume(mem2 == mem18);
+         assume(mem3 == mem19);
+         assume(mem4 == mem20);
+         assume(mem5 == mem21);
+         assume(mem6 == mem22);
+         assume(mem7 == mem23);
+         assume(mem8 == mem24);
+         assume(mem9 == mem25);
+         assume(mem10 == mem26);
+         assume(mem11 == mem27);
+         assume(mem12 == mem28);
+         assume(mem13 == mem29);
+         assume(mem14 == mem30);
+         assume(mem15 == mem31);
+      end
+   end
+
+   wire [31:0] snapshot_mem0  = (arfwe1 && dstarf1==0 ) ? com1data : mem0;
+   wire [31:0] snapshot_mem1  = (arfwe1 && dstarf1==1 ) ? com1data : mem1;
+   wire [31:0] snapshot_mem2  = (arfwe1 && dstarf1==2 ) ? com1data : mem2;
+   wire [31:0] snapshot_mem3  = (arfwe1 && dstarf1==3 ) ? com1data : mem3;
+   wire [31:0] snapshot_mem4  = (arfwe1 && dstarf1==4 ) ? com1data : mem4;
+   wire [31:0] snapshot_mem5  = (arfwe1 && dstarf1==5 ) ? com1data : mem5;
+   wire [31:0] snapshot_mem6  = (arfwe1 && dstarf1==6 ) ? com1data : mem6;
+   wire [31:0] snapshot_mem7  = (arfwe1 && dstarf1==7 ) ? com1data : mem7;
+   wire [31:0] snapshot_mem8  = (arfwe1 && dstarf1==8 ) ? com1data : mem8;
+   wire [31:0] snapshot_mem9  = (arfwe1 && dstarf1==9 ) ? com1data : mem9;
+   wire [31:0] snapshot_mem10 = (arfwe1 && dstarf1==10) ? com1data : mem10;
+   wire [31:0] snapshot_mem11 = (arfwe1 && dstarf1==11) ? com1data : mem11;
+   wire [31:0] snapshot_mem12 = (arfwe1 && dstarf1==12) ? com1data : mem12;
+   wire [31:0] snapshot_mem13 = (arfwe1 && dstarf1==13) ? com1data : mem13;
+   wire [31:0] snapshot_mem14 = (arfwe1 && dstarf1==14) ? com1data : mem14;
+   wire [31:0] snapshot_mem15 = (arfwe1 && dstarf1==15) ? com1data : mem15;
+   wire [31:0] snapshot_mem16 = (arfwe1 && dstarf1==16) ? com1data : mem16;
+   wire [31:0] snapshot_mem17 = (arfwe1 && dstarf1==17) ? com1data : mem17;
+   wire [31:0] snapshot_mem18 = (arfwe1 && dstarf1==18) ? com1data : mem18;
+   wire [31:0] snapshot_mem19 = (arfwe1 && dstarf1==19) ? com1data : mem19;
+   wire [31:0] snapshot_mem20 = (arfwe1 && dstarf1==20) ? com1data : mem20;
+   wire [31:0] snapshot_mem21 = (arfwe1 && dstarf1==21) ? com1data : mem21;
+   wire [31:0] snapshot_mem22 = (arfwe1 && dstarf1==22) ? com1data : mem22;
+   wire [31:0] snapshot_mem23 = (arfwe1 && dstarf1==23) ? com1data : mem23;
+   wire [31:0] snapshot_mem24 = (arfwe1 && dstarf1==24) ? com1data : mem24;
+   wire [31:0] snapshot_mem25 = (arfwe1 && dstarf1==25) ? com1data : mem25;
+   wire [31:0] snapshot_mem26 = (arfwe1 && dstarf1==26) ? com1data : mem26;
+   wire [31:0] snapshot_mem27 = (arfwe1 && dstarf1==27) ? com1data : mem27;
+   wire [31:0] snapshot_mem28 = (arfwe1 && dstarf1==28) ? com1data : mem28;
+   wire [31:0] snapshot_mem29 = (arfwe1 && dstarf1==29) ? com1data : mem29;
+   wire [31:0] snapshot_mem30 = (arfwe1 && dstarf1==30) ? com1data : mem30;
+   wire [31:0] snapshot_mem31 = (arfwe1 && dstarf1==31) ? com1data : mem31;
+
+   always @(posedge clk) begin
+      if(about_to_commit_i_in_rob2) begin
+         assume(snapshot_mem0 == snapshot_mem16);
+         assume(snapshot_mem1 == snapshot_mem17);
+         assume(snapshot_mem2 == snapshot_mem18);
+         assume(snapshot_mem3 == snapshot_mem19);
+         assume(snapshot_mem4 == snapshot_mem20);
+         assume(snapshot_mem5 == snapshot_mem21);
+         assume(snapshot_mem6 == snapshot_mem22);
+         assume(snapshot_mem7 == snapshot_mem23);
+         assume(snapshot_mem8 == snapshot_mem24);
+         assume(snapshot_mem9 == snapshot_mem25);
+         assume(snapshot_mem10 ==snapshot_ mem26);
+         assume(snapshot_mem11 ==snapshot_ mem27);
+         assume(snapshot_mem12 ==snapshot_ mem28);
+         assume(snapshot_mem13 ==snapshot_ mem29);
+         assume(snapshot_mem14 ==snapshot_ mem30);
+         assume(snapshot_mem15 ==snapshot_ mem31);
+      end
+   end
+
+
 
    // EDIT: Insert the qed ready logic -- tracks number of committed instructions
    (* keep *)
@@ -1971,26 +2170,29 @@ module pipeline
    wire [1:0] num_orig_commits;
    wire [1:0] num_dup_commits;
 
-   // Instruction with destination register as 5'b0 is a NOP so ignore those
-   assign num_orig_commits = ((arfwe1 == 1)&&(dstarf1 < 16)&&(dstarf1 != 5'b0)
-			      &&(arfwe2 == 1)&&(dstarf2 < 16)&&(dstarf2 != 5'b0)) ? 2'b10 :
-			     ((((arfwe1 == 1)&&(dstarf1 < 16)&&(dstarf1 != 5'b0)
-			       &&((arfwe2 != 1)||(dstarf2 >= 16)||(dstarf2 == 5'b0)))
-			      ||((arfwe2 == 1)&&(dstarf2 < 16)&&(dstarf2 != 5'b0)
-				 &&((arfwe1 != 1)||(dstarf1 >= 16)||(dstarf1 == 5'b0)))) ? 2'b01 : 2'b00) ;
+   wire arf_write1_first_half = (first_qed_i_has_commited || about_to_commit_i_in_rob1 ) && 
+                                (arfwe1 == 1)&&(dstarf1 < 16)&&(dstarf1 != 5'b0);
+   wire arf_write2_first_half = (first_qed_i_has_commited || about_to_commit_i_in_rob2 || about_to_commit_i_in_rob1 ) && 
+                                (arfwe2 == 1)&&(dstarf2 < 16)&&(dstarf2 != 5'b0);
+   
+   wire arf_write1_second_half = (first_qed_i_has_commited || about_to_commit_i_in_rob1 ) && 
+                                 (arfwe1 == 1)&&(dstarf1 >= 16);
+   wire arf_write2_second_half = (first_qed_i_has_commited || about_to_commit_i_in_rob2 || about_to_commit_i_in_rob1 ) && 
+                                 (arfwe2 == 1)&&(dstarf2 >= 16);
 
+
+   assign num_orig_commits = ( arf_write1_first_half && arf_write2_first_half ) ? 2'b10 :
+                             ( arf_write1_first_half || arf_write2_first_half ) ? 2'b01 :
+                                                                                  2'b00 ;
 
    // When destination register is 5'b0, it remains the same for both original and duplicate
-   assign num_dup_commits = ((arfwe1 == 1)&&(dstarf1 >= 16)
-			      &&(arfwe2 == 1)&&(dstarf2 >= 16)) ? 2'b10 :
-			     ((((arfwe1 == 1)&&(dstarf1 >= 16)
-			       &&((arfwe2 != 1)||(dstarf2 < 16)))
-			      ||((arfwe2 == 1)&&(dstarf2 >= 16)
-				 &&((arfwe1 != 1)||(dstarf1 < 16)))) ? 2'b01 : 2'b00) ;
+   assign num_dup_commits = (arf_write1_second_half && arf_write2_second_half) ? 2'b10 :
+                            (arf_write1_second_half || arf_write2_second_half) ? 2'b01 :
+                                                                                 2'b00 ;
 
    always @(posedge clk)
      begin
-	if (reset) begin
+	if (outside_reset) begin
 	   num_orig_insts <= 16'b0;
 	   num_dup_insts <= 16'b0;
 	end else begin
@@ -1999,14 +2201,14 @@ module pipeline
 	end
      end
 
-   assign qed_ready = (num_orig_insts == num_dup_insts);
+   assign qed_ready = (num_orig_insts == num_dup_insts) && first_qed_i_has_commited;
    
    always @(posedge clk)
      begin
-	if (qed_ready) begin
-	   sqed: assert property (mem1 == mem17);
-	end
-     end
+   	if (qed_ready) begin
+   	   sqed: assert property (mem1 == mem17);
+   	end
+   end
 
 
    // EDIT END

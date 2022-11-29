@@ -49,7 +49,10 @@ module reorderbuf
    output wire 			  combranch,
    input wire [`RRF_SEL-1:0] 	  dispatchptr,
    input wire [`RRF_SEL:0] 	  rrf_freenum,
-   input wire 			  prmiss
+   input wire 			  prmiss,
+
+   output wire commit1,
+   output wire commit2
    );
 
    reg [`RRF_NUM-1:0] 		  finish;
@@ -69,10 +72,10 @@ module reorderbuf
 				  1'b1 : 1'b0;
    wire 			  com_en1 = ({hidp, dispatchptr} - {1'b0, comptr}) > 0 ? 1'b1 : 1'b0;
    wire 			  com_en2 = ({hidp, dispatchptr} - {1'b0, comptr}) > 1 ? 1'b1 : 1'b0;
-   wire 			  commit1 = com_en1 & finish[comptr];
+   assign	  commit1 = com_en1 & finish[comptr];
    //   wire commit2 = commit1 & com_en2 & finish[comptr2];
 
-   wire 			  commit2 = 
+   assign	  commit2 = 
 				  ~(~prmiss & commit1 & isbranch[comptr]) &
 				  ~(commit1 & storebit[comptr] & ~prmiss) &
 				  commit1 & com_en2 & finish[comptr2];

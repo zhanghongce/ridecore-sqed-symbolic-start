@@ -129,8 +129,38 @@ module ram_sync_nolatch_4r2w #(
     input wire [BRAM_DATA_WIDTH-1:0]  wdata2,
     input wire 			      we1,
     input wire 			      we2,
-    output wire [BRAM_DATA_WIDTH-1:0] mem1,
-    output wire [BRAM_DATA_WIDTH-1:0] mem17
+output wire [BRAM_DATA_WIDTH-1:0] mem0 ,
+output wire [BRAM_DATA_WIDTH-1:0] mem1 ,
+output wire [BRAM_DATA_WIDTH-1:0] mem2 ,
+output wire [BRAM_DATA_WIDTH-1:0] mem3 ,
+output wire [BRAM_DATA_WIDTH-1:0] mem4 ,
+output wire [BRAM_DATA_WIDTH-1:0] mem5 ,
+output wire [BRAM_DATA_WIDTH-1:0] mem6 ,
+output wire [BRAM_DATA_WIDTH-1:0] mem7 ,
+output wire [BRAM_DATA_WIDTH-1:0] mem8 ,
+output wire [BRAM_DATA_WIDTH-1:0] mem9 ,
+output wire [BRAM_DATA_WIDTH-1:0] mem10,
+output wire [BRAM_DATA_WIDTH-1:0] mem11,
+output wire [BRAM_DATA_WIDTH-1:0] mem12,
+output wire [BRAM_DATA_WIDTH-1:0] mem13,
+output wire [BRAM_DATA_WIDTH-1:0] mem14,
+output wire [BRAM_DATA_WIDTH-1:0] mem15,
+output wire [BRAM_DATA_WIDTH-1:0] mem16,
+output wire [BRAM_DATA_WIDTH-1:0] mem17,
+output wire [BRAM_DATA_WIDTH-1:0] mem18,
+output wire [BRAM_DATA_WIDTH-1:0] mem19,
+output wire [BRAM_DATA_WIDTH-1:0] mem20,
+output wire [BRAM_DATA_WIDTH-1:0] mem21,
+output wire [BRAM_DATA_WIDTH-1:0] mem22,
+output wire [BRAM_DATA_WIDTH-1:0] mem23,
+output wire [BRAM_DATA_WIDTH-1:0] mem24,
+output wire [BRAM_DATA_WIDTH-1:0] mem25,
+output wire [BRAM_DATA_WIDTH-1:0] mem26,
+output wire [BRAM_DATA_WIDTH-1:0] mem27,
+output wire [BRAM_DATA_WIDTH-1:0] mem28,
+output wire [BRAM_DATA_WIDTH-1:0] mem29,
+output wire [BRAM_DATA_WIDTH-1:0] mem30,
+output wire [BRAM_DATA_WIDTH-1:0] mem31
     );
 
    reg [BRAM_DATA_WIDTH-1:0] 				       mem [0:DATA_DEPTH-1];
@@ -147,8 +177,39 @@ module ram_sync_nolatch_4r2w #(
 	mem[waddr2] <= wdata2;
    end
 
-   assign mem1 = mem[1];
-   assign mem17 = mem[17];
+assign mem0  = mem[0 ];
+assign mem1  = mem[1 ];
+assign mem2  = mem[2 ];
+assign mem3  = mem[3 ];
+assign mem4  = mem[4 ];
+assign mem5  = mem[5 ];
+assign mem6  = mem[6 ];
+assign mem7  = mem[7 ];
+assign mem8  = mem[8 ];
+assign mem9  = mem[9 ];
+assign mem10 = mem[10];
+assign mem11 = mem[11];
+assign mem12 = mem[12];
+assign mem13 = mem[13];
+assign mem14 = mem[14];
+assign mem15 = mem[15];
+assign mem16 = mem[16];
+assign mem17 = mem[17];
+assign mem18 = mem[18];
+assign mem19 = mem[19];
+assign mem20 = mem[20];
+assign mem21 = mem[21];
+assign mem22 = mem[22];
+assign mem23 = mem[23];
+assign mem24 = mem[24];
+assign mem25 = mem[25];
+assign mem26 = mem[26];
+assign mem27 = mem[27];
+assign mem28 = mem[28];
+assign mem29 = mem[29];
+assign mem30 = mem[30];
+assign mem31 = mem[31];
+
 endmodule // ram_sync_nolatch_4r2w
 
 /*

@@ -102,7 +102,8 @@ module top
      (
       .inst1(instruction),
       .clk(clk),
-      .reset(~reset_x | prog_loading),
+      .reset(), // ~reset_x | prog_loading
+      .outside_reset(~reset_x),
       .pc(pc),
       .idata(idata),
       .dmem_wdata(dmem_wdata_core),
