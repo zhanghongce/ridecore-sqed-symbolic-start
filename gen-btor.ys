@@ -1,0 +1,85 @@
+read_verilog -formal ./vlg/define.v \
+./vlg/topsim.v \
+./vlg/alloc_issue_ino.v \
+./vlg/search_be.v \
+./vlg/srcsel.v  \
+./vlg/alu_ops.vh \
+./vlg/arf.v \
+./vlg/ram_sync.v \
+./vlg/ram_sync_nolatch.v  \
+./vlg/brimm_gen.v \
+./vlg/constants.vh \
+./vlg/decoder.v \
+./vlg/dmem.v \
+./vlg/exunit_alu.v \
+./vlg/exunit_branch.v \
+./vlg/exunit_ldst.v \
+./vlg/exunit_mul.v \
+./vlg/imem.v \
+./vlg/imm_gen.v \
+./vlg/pipeline_if.v \
+./vlg/gshare.v \
+./vlg/pipeline.v \
+./vlg/oldest_finder.v \
+./vlg/btb.v \
+./vlg/prioenc.v \
+./vlg/mpft.v \
+./vlg/reorderbuf.v \
+./vlg/rrf_freelistmanager.v \
+./vlg/rrf.v \
+./vlg/rs_alu.v \
+./vlg/rs_branch.v \
+./vlg/rs_ldst.v \
+./vlg/rs_mul.v \
+./vlg/rs_reqgen.v \
+./vlg/rv32_opcodes.vh \
+./vlg/src_manager.v \
+./vlg/srcopr_manager.v \
+./vlg/storebuf.v \
+./vlg/tag_generator.v \
+./vlg/dualport_ram.v \
+./vlg/alu.v \
+./vlg/multiplier.v \
+./vlg/inst_constraints.v \
+./vlg/modify_instruction.v \
+./vlg/qed_decoder.v \
+./vlg/qed_i_cache.v \
+./vlg/qed_instruction_mux.v \
+./vlg/qed.v;
+
+# prep does a conservative elaboration
+# of the top module provided
+prep -top top;
+
+# this command just does a sanity check
+# of the hierarchy
+hierarchy -check;
+
+# If an assumption is flopped, you might
+# see strange behavior at the last state
+# (because the clock hasn't toggled)
+# this command ensures that assumptions
+# hold at every state
+chformal -assume -early;
+
+# this processes memories
+# nomap means it will keep them as arrays
+memory;
+
+# flatten the design hierarchy
+flatten;
+
+# (optional) uncomment and set values to simulate reset signal
+# use -resetn for an active low pin
+# -n configures the number of cycles to simulate
+# -rstlen configures how long the reset is active (recommended to keep it active for the whole simulation)
+# -w tells it to write back the final state of the simulation as the initial state in the btor2 file
+# another useful option is -zinit which zero initializes any uninitialized state
+sim -clock clk -resetn reset_x -n 5 -rstlen 5 -w top
+
+# This turns all undriven signals into
+# inputs
+setundef -undriven -expose;
+
+# This writes to a file in BTOR2 format
+write_btor ridecore.btor2
